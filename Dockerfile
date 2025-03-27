@@ -6,14 +6,14 @@ WORKDIR /app
 
 # Copy the Maven wrapper and pom.xml
 COPY Spring1/pom.xml ./
-COPY demo1/.mvn .mvn
-COPY demo1/mvnw .
+COPY .mvn .mvn
+COPY mvnw .
 
 # Build the application inside the container
 RUN chmod +x mvnw && ./mvnw dependency:resolve
 
 # Copy the project source code
-COPY demo1/Spring1/src ./src
+COPY Spring1/src ./src
 
 # Package the application
 RUN ./mvnw clean package -DskipTests
