@@ -1,24 +1,28 @@
 # Use an official OpenJDK runtime as a parent image
 FROM openjdk:17-jdk-slim
 
-# Set the working directory in the container
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy the Maven build file and dependencies first for efficient caching
-COPY Spring1/pom.xml .
-COPY Spring1/.mvn .mvn
-COPY Spring1/mvnw .
-RUN chmod +x mvnw
+# Copy Maven wrapper scripts
+COPY mvnw mvnw
+COPY mvnw.cmd mvnw.cmd
+COPY .mvn .mvn
+
+# Copy the pom.xml to download dependencies
+COPY Spring1/pom.xml pom.xml
+
+# Download dependencies (cache layer)
 RUN ./mvnw dependency:go-offline
 
-# Copy the rest of the application source code
-COPY Spring1/src ./src
+# Copy the entire Spring Boot application source
+COPY Spring1 /app
 
 # Build the application
-RUN ./mvnw package -DskipTests
+RUN chmod +x mvnw && ./mvnw package -DskipTests
 
-# Expose the application port
+# Expose the application port (change if needed)
 EXPOSE 8080
 
-# Run the application
+# Run the Spring Boot application
 CMD ["java", "-jar", "target/*.jar"]
