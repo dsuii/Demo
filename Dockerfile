@@ -1,25 +1,12 @@
-# Use an official OpenJDK runtime as a parent image
-FROM openjdk:17-jdk-slim
 
-# Set the working directory in the container
-WORKDIR /app
+# Use Maven to build the application
+FROM maven:3.8.5-openjdk-17 AS build
+COPY . .
+RUN mvn clean package -DskipTests
 
-# Copy the Maven wrapper and pom.xml
-COPY Spring1/pom.xml ./
-COPY .mvn .mvn
-COPY mvnw .
-
-# Build the application inside the container
-RUN chmod +x mvnw && ./mvnw dependency:resolve
-
-# Copy the project source code
-COPY Spring1/src ./src
-
-# Package the application
-RUN ./mvnw clean package -DskipTests
-
-# Expose the application port
+# Use OpenJDK to run the application
+FROM openjdk:17.0.1-jdk-slim
+COPY --from=build /target/demo-0.0.1-SNAPSHOT.jar demo.jar
 EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "demo.jar"]
 
-# Run the application
-CMD ["java", "-jar", "target/*.jar"]
